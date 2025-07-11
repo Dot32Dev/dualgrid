@@ -1,20 +1,21 @@
 local TILESIZE = 40
+local EDIT_MODE = 1
 
-local tiles = {}
+local TILES = {}
 for x=1, love.graphics.getWidth()/TILESIZE do
-  table.insert(tiles, {})
+  table.insert(TILES, {})
   for y=1, love.graphics.getHeight()/TILESIZE do
-    table.insert(tiles[x], 0)
+    table.insert(TILES[x], 0)
   end
 end
 
-local tileset = {}
-local tilesetImage = love.graphics.newImage("tileset.png")
+local TILESET = {}
+local TILESET_IMAGE = love.graphics.newImage("tileset.png")
 local TILESET_TILE_SIZE = 100
-for i=1, tilesetImage:getWidth()/TILESET_TILE_SIZE do
+for i=1, TILESET_IMAGE:getWidth()/TILESET_TILE_SIZE do
   table.insert(
-    tileset, 
-    love.graphics.newQuad((i-1) * TILESET_TILE_SIZE, 0, 100, 100, tilesetImage)
+    TILESET, 
+    love.graphics.newQuad((i-1) * TILESET_TILE_SIZE, 0, 100, 100, TILESET_IMAGE)
   )
 end
 
@@ -28,7 +29,10 @@ function love.draw()
     TILESIZE
   )
 
-  drawTiles(0, 0, tiles, TILESIZE)
+  drawTiles(0, 0, TILES, TILESIZE)
+
+  love.graphics.setColor(1,1,1,1)
+  love.graphics.print("Press space to switch edit mode", 10 , 10)
 end
 
 function drawGrid(xx, yy, width, height, tilesize) 
@@ -66,8 +70,8 @@ function drawTiles(xx, yy, grid, tilesize)
       imageIdx, rot = lookup(tile)
       love.graphics.setColor(1,1,1,1)
       love.graphics.draw(
-        tilesetImage, 
-        tileset[imageIdx], 
+        TILESET_IMAGE, 
+        TILESET[imageIdx], 
         (x - 1) * tilesize + xx, 
         (y - 1) * tilesize + yy, 
         math.pi/2 * rot, 
@@ -91,11 +95,19 @@ function drawTiles(xx, yy, grid, tilesize)
   end
 end
 
-function love.mousepressed( x, y, button, istouch, presses )
-  xx = math.floor((x) / TILESIZE) + 1
-  yy = math.floor((y) / TILESIZE) + 1
+function love.keypressed(key)
+  if key == "space" then
+    EDIT_MODE = 1 - EDIT_MODE
+  end
+end
 
-  tiles[xx][yy] = 1
+function love.update()
+  if love.mouse.isDown(1) then
+    local x = math.floor(love.mouse.getX() / TILESIZE) + 1
+    local y = math.floor(love.mouse.getY() / TILESIZE) + 1
+
+    TILES[x][y] = EDIT_MODE
+  end 
 end
 
 function lookup(n) 
